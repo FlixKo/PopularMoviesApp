@@ -22,6 +22,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:gravity="left"
+            android:id="@+id/iv_movie_poster"
 
             />
 
@@ -35,25 +36,29 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Year"
-                android:textSize="32dp" />
+                android:textSize="32dp"
+                android:id="@+id/tv_movie_year"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Duration"
-                android:textSize="24dp" />
+                android:textSize="24dp"
+                android:id="@+id/tv_movie_duration"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Rating"
-                android:textSize="16dp" />
+                android:textSize="16dp"
+                android:id="@+id/tv_movie_rating"/>
 
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Mark as favorite"
-                android:textSize="8dp" />
+                android:textSize="8dp"
+                android:id="@+id/button_favorite"/>
         </LinearLayout>
 
     </LinearLayout>
@@ -63,5 +68,6 @@
         android:layout_height="wrap_content"
         android:text="Description
 Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
-" />
+"
+        android:id="@+id/tv_movie_description"/>
 </LinearLayout>
