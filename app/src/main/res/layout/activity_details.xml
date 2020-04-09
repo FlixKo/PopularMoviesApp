@@ -6,21 +6,27 @@
     android:orientation="vertical">
 
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/colorPrimary"
         android:id="@+id/tv_movie_title"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:background="@color/grey"
         android:text="Movie Title"
-        android:textSize="88dp" />
+        android:autoSizeTextType="uniform"
+        android:autoSizeMinTextSize="32sp"
+        android:autoSizeMaxTextSize="72sp"
+        android:autoSizeStepGranularity="2sp"
+        android:textColor="@color/white"
+        />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:padding="8dp">
 
         <ImageView
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:gravity="left"
             android:id="@+id/iv_movie_poster"
 
@@ -42,13 +48,6 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Duration"
-                android:textSize="24dp"
-                android:id="@+id/tv_movie_duration"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:text="Rating"
                 android:textSize="16dp"
                 android:id="@+id/tv_movie_rating"/>
@@ -62,12 +61,17 @@
         </LinearLayout>
 
     </LinearLayout>
-
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Description
 Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
 "
-        android:id="@+id/tv_movie_description"/>
+        android:id="@+id/tv_movie_description"
+        android:padding="8dp"/>
+
+    </androidx.core.widget.NestedScrollView>
 </LinearLayout>

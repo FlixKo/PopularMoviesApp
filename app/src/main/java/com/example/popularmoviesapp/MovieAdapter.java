@@ -1,5 +1,6 @@
 package com.example.popularmoviesapp;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieHolder>
 
     private ArrayList<Movie> mMovies;
     private final MovieAdapterOnClickHandler mClickHandler;
+    private final String LOG_TAG = MovieAdapter.class.getName();
 
     Context ctx;
     public MovieAdapter(MovieAdapterOnClickHandler mClickHandler, Context context, ArrayList<Movie> movies){
@@ -40,6 +42,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieHolder>
 
     @Override
     public void onBindViewHolder(@NonNull MovieHolder holder, int position) {
+        Log.d(LOG_TAG, mMovies.get(position).getImage());
         Picasso.get()
                 .load(mMovies.get(position).getImage())
                 .placeholder(R.drawable.placeholder)

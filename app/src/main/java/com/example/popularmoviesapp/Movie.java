@@ -8,15 +8,15 @@ public class Movie implements Parcelable {
     private String mImage;
     private String mYear;
     private String mTitle;
-    private String mDuration;
     private String mRating;
     private String mDescription;
+    private String mPopularity;
+    private String voteCount;
 
-    public Movie(String image, String year, String title, String duration, String rating, String description){
+    public Movie(String image, String year, String title, String rating, String description){
         mImage = image;
         mYear = year;
         mTitle = title;
-        mDuration = duration;
         mRating = rating;
         mDescription = description;
     }
@@ -26,7 +26,6 @@ public class Movie implements Parcelable {
         mTitle = in.readString();
         mYear = in.readString();
         mDescription = in.readString();
-        mDuration = in.readString();
         mRating = in.readString();
     }
 
@@ -52,14 +51,6 @@ public class Movie implements Parcelable {
 
     public void setTitle(String mTitle) {
         this.mTitle = mTitle;
-    }
-
-    public String getDuration() {
-        return mDuration;
-    }
-
-    public void setDuration(String mDuration) {
-        this.mDuration = mDuration;
     }
 
     public String getRating() {
@@ -89,7 +80,6 @@ public class Movie implements Parcelable {
         dest.writeString(mTitle);
         dest.writeString(mYear);
         dest.writeString(mDescription);
-        dest.writeString(mDuration);
         dest.writeString(mRating);
     }
 

@@ -15,7 +15,6 @@ public class DetailsActivity extends AppCompatActivity {
     private TextView mDescription;
     private ImageView mPoster;
     private TextView mRating;
-    private TextView mDuration;
     private TextView mYear;
 
     private Movie mMovie;
@@ -28,7 +27,6 @@ public class DetailsActivity extends AppCompatActivity {
         mTitle = findViewById(R.id.tv_movie_title);
         mYear = findViewById(R.id.tv_movie_year);
         mDescription = findViewById(R.id.tv_movie_description);
-        mDuration = findViewById(R.id.tv_movie_duration);
         mRating = findViewById(R.id.tv_movie_rating);
         mPoster = findViewById(R.id.iv_movie_poster);
 
@@ -40,9 +38,9 @@ public class DetailsActivity extends AppCompatActivity {
                 mTitle.setText(mMovie.getTitle());
                 mYear.setText(mMovie.getYear());
                 mDescription.setText(mMovie.getDescription());
-                mDuration.setText(mMovie.getDuration());
                 mRating.setText(mMovie.getRating());
                 //mPoster.setImageResource(mMovie.getImage());
+
                 Picasso.get()
                         .load(mMovie.getImage())
                         .placeholder(R.drawable.placeholder)
