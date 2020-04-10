@@ -27,6 +27,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieHolder>
         mMovies = movies;
     }
 
+
     public interface MovieAdapterOnClickHandler {
         void onClick(Movie movie);
     }
