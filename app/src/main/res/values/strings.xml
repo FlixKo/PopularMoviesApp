@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">Popular Movies</string>
-    <string name="details_name">Movie Details</string>
     <string name="error_message">Failed to get results. Please try again.</string>
+    <string name="no_network">No active network connection. Getting movie information failed.</string>
 </resources>

@@ -16,11 +16,11 @@ import java.util.ArrayList;
 
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieHolder> {
 
-    private ArrayList<Movie> mMovies;
+    private final ArrayList<Movie> mMovies;
     private final MovieAdapterOnClickHandler mClickHandler;
     private final String LOG_TAG = MovieAdapter.class.getName();
 
-    Context ctx;
+    private final Context ctx;
     public MovieAdapter(MovieAdapterOnClickHandler mClickHandler, Context context, ArrayList<Movie> movies){
         this.mClickHandler = mClickHandler;
         ctx = context;
@@ -47,7 +47,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieHolder>
         Picasso.get()
                 .load(mMovies.get(position).getImage())
                 .placeholder(R.drawable.placeholder)
-                //.resize(500,500)
+                .error(R.drawable.image_not_found)
                 .into(holder.myImageView);
         //holder.myImageView.setImageResource(mMovies[position].getImage());
     }
@@ -59,8 +59,8 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieHolder>
 
     public class MovieHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        ImageView myImageView;
-        public MovieHolder(@NonNull View itemView) {
+        final ImageView myImageView;
+        MovieHolder(@NonNull View itemView) {
             super(itemView);
             myImageView = itemView.findViewById(R.id.movie_poster);
             itemView.setOnClickListener(this);

@@ -1,6 +1,6 @@
-package com.example.popularmoviesapp;
+package com.example.popularmoviesapp.utilities;
 
-import android.util.Log;
+import com.example.popularmoviesapp.Movie;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,11 +27,11 @@ public class JsonUtils {
         JSONObject jsonString = new JSONObject(mJsonString);
         JSONArray resultsArray = jsonString.getJSONArray(JSON_RESULTS);
 
-        String title = "";
-        String year = "";
-        String description = "";
-        String rating = "";
-        String poster_path = "";
+        String title;
+        String year;
+        String description;
+        String rating;
+        String poster_path;
 
         for(int i = 0; i<resultsArray.length();i++){
 
@@ -47,21 +47,21 @@ public class JsonUtils {
         return movies;
     }
 
-    public static String createImageString(String _poster_path){
+    private static String createImageString(String _poster_path){
         if(_poster_path.equals("")){
             return _poster_path;
         }
         return POSTER_BASE_URL + POSTER_SIZE + _poster_path;
     }
 
-    public static String formatYear(String _year){
+    private static String formatYear(String _year){
         if(_year.equals("")){
             return _year;
         }
         return _year.substring(0,4);
     }
 
-    public static String formatRating(String _rating){
+    private static String formatRating(String _rating){
         return _rating + "/10";
     }
 }
