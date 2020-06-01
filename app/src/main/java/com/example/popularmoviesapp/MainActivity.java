@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Context;
 import android.content.Intent;
 
+import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
@@ -61,7 +62,12 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         ArrayList<Movie> emptyList = new ArrayList<>();
         mAdapter = new MovieAdapter(this, this, emptyList);
         recyclerView.setAdapter(mAdapter);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(getApplicationContext(), 2);
+        GridLayoutManager gridLayoutManager;
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+            gridLayoutManager = new GridLayoutManager(this, 2);
+        }else{
+            gridLayoutManager = new GridLayoutManager(this, 3);
+        }
         recyclerView.setLayoutManager(gridLayoutManager);
 
         if(isConnected(this)){
@@ -133,8 +139,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         mErrorMessageDisplay.setVisibility(View.INVISIBLE);
         mAdapter = new MovieAdapter(this, this, JsonUtils.extractMovieFromJSON(searchResult));
         recyclerView.setAdapter(mAdapter);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(getApplicationContext(), 2);
-        recyclerView.setLayoutManager(gridLayoutManager);
+        //GridLayoutManager gridLayoutManager = new GridLayoutManager(getApplicationContext(), 2);
+        //recyclerView.setLayoutManager(gridLayoutManager);
         scrollView.setVisibility(View.VISIBLE);
     }
     private boolean isConnected(Context context) {
