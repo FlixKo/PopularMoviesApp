@@ -1,6 +1,10 @@
 package com.example.popularmoviesapp.utilities;
 
+import android.util.Log;
+
 import com.example.popularmoviesapp.Movie;
+import com.example.popularmoviesapp.Review;
+import com.example.popularmoviesapp.Trailer;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -16,6 +20,22 @@ public class JsonUtils {
     private final static String JSON_DESC = "overview";
     private final static String JSON_RATING = "vote_average";
     private final static String JSON_POSTER_PATH = "poster_path";
+    private final static String JSON_MOVIE_ID = "id";
+
+    private final static String JSON_REVIEW_AUTHOR = "author";
+    private final static String JSON_REVIEW_CONTENT = "content";
+    private final static String JSON_REVIEW_ID = "id";
+    private final static String JSON_REVIEW_URL = "url";
+
+    private final static String JSON_TRAILER_ID = "id";
+    private final static String JSON_TRAILER_ISO_639_1 = "iso_639_1";
+    private final static String JSON_TRAILER_ISO_3166_1 = "iso_3166_1";
+    private final static String JSON_TRAILER_KEY = "key";
+    private final static String JSON_TRAILER_NAME = "name";
+    private final static String JSON_TRAILER_SIZE = "size";
+    private final static String JSON_TRAILER_SITE = "site";
+    private final static String JSON_TRAILER_TYPE = "type";
+
 
     private final static String POSTER_BASE_URL = "https://image.tmdb.org/t/p/";
     private final static String POSTER_SIZE = "w342";
@@ -32,6 +52,7 @@ public class JsonUtils {
         String description;
         String rating;
         String poster_path;
+        int movieID;
 
         for(int i = 0; i<resultsArray.length();i++){
 
@@ -41,8 +62,9 @@ public class JsonUtils {
             description = currentMovie.optString(JSON_DESC);
             rating = currentMovie.optString(JSON_RATING);
             poster_path = currentMovie.optString(JSON_POSTER_PATH);
+            movieID = currentMovie.optInt(JSON_MOVIE_ID);
 
-            movies.add(new Movie(createImageString(poster_path),formatYear(year),title,formatRating(rating),description));
+            movies.add(new Movie(createImageString(poster_path),formatYear(year),title,formatRating(rating),description,movieID));
         }
         return movies;
     }
@@ -63,5 +85,60 @@ public class JsonUtils {
 
     private static String formatRating(String _rating){
         return _rating + "/10";
+    }
+
+    public static ArrayList<Review> extractReviewFromJSON(String mJsonString) throws JSONException {
+        ArrayList<Review> reviews = new ArrayList<>();
+        JSONObject jsonString = new JSONObject(mJsonString);
+        JSONArray resultsArray = jsonString.getJSONArray(JSON_RESULTS);
+
+        String author;
+        String content;
+        String id;
+        String url;
+
+
+        for(int i = 0; i<resultsArray.length();i++){
+
+            JSONObject currentReview = resultsArray.getJSONObject(i);
+            author = currentReview.getString(JSON_REVIEW_AUTHOR);
+            content = currentReview.optString(JSON_REVIEW_CONTENT).trim();
+            id = currentReview.optString(JSON_REVIEW_ID);
+            url = currentReview.optString(JSON_REVIEW_URL);
+
+            reviews.add(new Review(author,content,id,url));
+        }
+        return reviews;
+    }
+
+    public static ArrayList<Trailer> extractTrailerFromJSON(String mJsonString) throws JSONException {
+        ArrayList<Trailer> trailer = new ArrayList<>();
+        JSONObject jsonString = new JSONObject(mJsonString);
+        JSONArray resultsArray = jsonString.getJSONArray(JSON_RESULTS);
+
+        String id;
+        String iso_639_1;
+        String iso_3166_1;
+        String key;
+        String name;
+        String site;
+        String size;
+        String type;
+
+        for(int i = 0; i<resultsArray.length();i++){
+
+            JSONObject currentTrailer = resultsArray.getJSONObject(i);
+            id = currentTrailer.getString(JSON_TRAILER_ID);
+            iso_639_1 = currentTrailer.optString(JSON_TRAILER_ISO_639_1).trim();
+            iso_3166_1 = currentTrailer.optString(JSON_TRAILER_ISO_3166_1);
+            key = currentTrailer.optString(JSON_TRAILER_KEY);
+            name = currentTrailer.optString(JSON_TRAILER_NAME);
+            site = currentTrailer.optString(JSON_TRAILER_SITE);
+            size = currentTrailer.optString(JSON_TRAILER_SIZE);
+            type = currentTrailer.optString(JSON_TRAILER_TYPE);
+
+            trailer.add(new Trailer(id, iso_639_1,iso_3166_1,key,name,site,size,type));
+        }
+        return trailer;
     }
 }

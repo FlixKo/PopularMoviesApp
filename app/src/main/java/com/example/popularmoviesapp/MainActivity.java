@@ -25,6 +25,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.example.popularmoviesapp.utilities.JsonUtils;
+import com.example.popularmoviesapp.utilities.MovieDatabase;
 import com.example.popularmoviesapp.utilities.NetworkUtils;
 
 import org.json.JSONException;
@@ -32,6 +33,7 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieAdapterOnClickHandler {
 
@@ -45,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     private RecyclerView recyclerView;
     private ScrollView scrollView;
     private MovieAdapter mAdapter;
+
+    private MovieDatabase mDb;
 
     public MainActivity() {
     }
@@ -102,7 +106,17 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
                 showNoNetworkErrorMessage();
             }
             return true;
+        }else if (id == R.id.menu_favorites) {
+            if(isConnected(this)){
+               // makeMovieDbSearchQuery(POPULARITY_DESCENDING);
+                loadFavoriteMoviesFromDB();
+            }else{
+                showNoNetworkErrorMessage();
+
+            }
+            return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -115,6 +129,17 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         startActivity(intentToStartDetailActivity);
     }
 
+    private void loadFavoriteMoviesFromDB(){
+        mDb = MovieDatabase.getInstance(getApplicationContext());
+        // Load favorite Movies from Database
+        List<Movie> moviesList = mDb.movieDao().loadAllMovies();
+        for(int i = 0; i<moviesList.size();i++){
+            Log.d(LOG_TAG,moviesList.get(i).getTitle());
+        }
+        mAdapter = new MovieAdapter(this, this, new ArrayList<>(moviesList));
+        recyclerView.setAdapter(mAdapter);
+        scrollView.setVisibility(View.VISIBLE);
+    }
 
     private void makeMovieDbSearchQuery(String searchQuery) {
 

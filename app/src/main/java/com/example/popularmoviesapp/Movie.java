@@ -3,6 +3,13 @@ package com.example.popularmoviesapp;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
+
+import java.util.ArrayList;
+
+@Entity(tableName = "movie")
 public class Movie implements Parcelable {
 
     private String mImage;
@@ -10,23 +17,48 @@ public class Movie implements Parcelable {
     private String mTitle;
     private String mRating;
     private String mDescription;
-    private String mPopularity;
-    private String voteCount;
+    private int mMovieID;
+//    private ArrayList<Review> mReviews;
+  //  private ArrayList<Trailer> mTrailer;
+    //private String mPopularity;
+    //private String voteCount;
 
-    public Movie(String image, String year, String title, String rating, String description){
+    @PrimaryKey(autoGenerate = true)
+    public int mId;
+
+    public Movie(int id, String image, String year, String title, String rating, String description, int movieID){
+                 //ArrayList reviews, ArrayList trailer){
+        mId = id;
         mImage = image;
         mYear = year;
         mTitle = title;
         mRating = rating;
         mDescription = description;
+        mMovieID = movieID;
+        //mReviews = reviews;
+        //mTrailer = trailer;
     }
 
+    @Ignore
+    public Movie(String image, String year, String title, String rating, String description, int movieID){
+        mImage = image;
+        mYear = year;
+        mTitle = title;
+        mRating = rating;
+        mDescription = description;
+        mMovieID = movieID;
+    }
+
+    @Ignore
     private Movie(Parcel in){
         mImage = in.readString();
         mTitle = in.readString();
         mYear = in.readString();
         mDescription = in.readString();
         mRating = in.readString();
+        mMovieID = in.readInt();
+        //mReviews = in.readArrayList(Review.class.getClassLoader());
+        //mTrailer = in.readArrayList(Trailer.class.getClassLoader());
     }
 
     public String getImage() {
@@ -69,6 +101,30 @@ public class Movie implements Parcelable {
         this.mDescription = mDescription;
     }
 
+    public int getMovieID() {
+        return mMovieID;
+    }
+
+    public void setMovieID(int mMovieID) {
+        this.mMovieID = mMovieID;
+    }
+
+//    public void setReviews(ArrayList<Review> mReviews) {
+//        this.mReviews = mReviews;
+//    }
+//
+//    public ArrayList<Review> getReviews() {
+//        return mReviews;
+//    }
+//
+//    public void setTrailer(ArrayList<Trailer> mTrailer) {
+//        this.mTrailer = mTrailer;
+//    }
+//
+//    public ArrayList<Trailer> getTrailer() {
+//        return mTrailer;
+//    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -81,6 +137,9 @@ public class Movie implements Parcelable {
         dest.writeString(mYear);
         dest.writeString(mDescription);
         dest.writeString(mRating);
+        dest.writeInt(mMovieID);
+        //dest.writeList(mReviews);
+        //dest.writeList(mTrailer);
     }
 
     public static final Parcelable.Creator<Movie> CREATOR = new Parcelable.Creator<Movie>() {
