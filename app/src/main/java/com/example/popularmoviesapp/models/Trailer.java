@@ -1,6 +1,16 @@
-package com.example.popularmoviesapp;
+package com.example.popularmoviesapp.models;
 
+import androidx.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
+@Entity(tableName = "trailer")
 public class Trailer {
+
+    private int mMovieId;
+
+    @PrimaryKey
+    @NonNull
     private String mId;
     private String mIso_639_1;
     private String mIso_3166_1;
@@ -10,9 +20,9 @@ public class Trailer {
     private String mSize;
     private String mType;
     private String mYoutubeLink;
-    private final String YOUTUBE_BASE = "https://www.youtube.com/watch?v=";
+    private String YOUTUBE_BASE = "https://www.youtube.com/watch?v=";
 
-    public Trailer(String id, String iso_639_1,String iso_3166_1,String key,String name,String site,String size,String type){
+    public Trailer(int movieId, String id, String iso_639_1, String iso_3166_1, String key, String name, String site, String size, String type) {
         mId = id;
         mIso_639_1 = iso_639_1;
         mIso_3166_1 = iso_3166_1;
@@ -22,6 +32,15 @@ public class Trailer {
         mSize = size;
         mType = type;
         mYoutubeLink = YOUTUBE_BASE + key;
+        mMovieId = movieId;
+    }
+
+    public int getMovieId() {
+        return this.mMovieId;
+    }
+
+    public void setMovieId(int movieId) {
+        this.mMovieId = movieId;
     }
 
     public String getId() {
@@ -94,5 +113,13 @@ public class Trailer {
 
     public void setType(String mType) {
         this.mType = mType;
+    }
+
+    public String getYOUTUBE_BASE() {
+        return YOUTUBE_BASE;
+    }
+
+    public void setYOUTUBE_BASE(String YOUTUBE_BASE) {
+        this.YOUTUBE_BASE = YOUTUBE_BASE;
     }
 }

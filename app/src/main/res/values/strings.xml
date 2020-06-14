@@ -2,4 +2,13 @@
     <string name="app_name">Popular Movies</string>
     <string name="error_message">Failed to get results. Please try again.</string>
     <string name="no_network">No active network connection. Getting movie information failed.</string>
+    <string name="fav_movies">Favorite Movies</string>
+    <string name="best_rated">Best Rated Movies</string>
+    <string name="popular_movies">Most Popular Movies</string>
+    <string name="year">Year</string>
+    <string name="duration">Duration</string>
+    <string name="rating">Rating</string>
+    <string name="add_fav">  Add Favorite</string>
+    <string name="trailer_title">Trailers:</string>
+    <string name="review_title">Reviews:</string>
 </resources>

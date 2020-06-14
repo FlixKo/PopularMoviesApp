@@ -1,21 +1,13 @@
 package com.example.popularmoviesapp;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.content.Context;
 import android.content.Intent;
-
 import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -24,30 +16,32 @@ import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.popularmoviesapp.database.MovieDatabase;
+import com.example.popularmoviesapp.models.Movie;
+import com.example.popularmoviesapp.models.MovieViewModel;
+import com.example.popularmoviesapp.utilities.FetchMoviesFromNetwork;
 import com.example.popularmoviesapp.utilities.JsonUtils;
-import com.example.popularmoviesapp.utilities.MovieDatabase;
-import com.example.popularmoviesapp.utilities.NetworkUtils;
 
 import org.json.JSONException;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieAdapterOnClickHandler {
 
     private final String LOG_TAG = MainActivity.class.getName();
-    private static final String POPULARITY_DESCENDING = "popularity.desc";
-    private static final String BEST_RATED_DESCENDING = "vote_average.desc";
-    private static final String VOTE_COUNT_DESCENDING = "vote_count.desc";
+    MovieViewModel movieViewModel;
     private ProgressBar mLoadingIndicator;
     private TextView mErrorMessageDisplay;
-
     private RecyclerView recyclerView;
     private ScrollView scrollView;
     private MovieAdapter mAdapter;
-
     private MovieDatabase mDb;
 
     public MainActivity() {
@@ -63,23 +57,67 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         mErrorMessageDisplay = findViewById(R.id.tv_error_message_display);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
+        movieViewModel = ViewModelProvider.AndroidViewModelFactory.getInstance(
+                getApplication()).create(MovieViewModel.class);
+
+        mDb = MovieDatabase.getInstance(getApplicationContext());
+
         ArrayList<Movie> emptyList = new ArrayList<>();
         mAdapter = new MovieAdapter(this, this, emptyList);
         recyclerView.setAdapter(mAdapter);
         GridLayoutManager gridLayoutManager;
-        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             gridLayoutManager = new GridLayoutManager(this, 2);
-        }else{
+        } else {
             gridLayoutManager = new GridLayoutManager(this, 3);
         }
         recyclerView.setLayoutManager(gridLayoutManager);
 
-        if(isConnected(this)){
-            makeMovieDbSearchQuery(POPULARITY_DESCENDING);
-        }else{
+
+        if (isConnected(this)) {
+            FetchMoviesFromNetwork.getPopularMovies(getApplicationContext());
+            FetchMoviesFromNetwork.getTopRatedMovies(getApplicationContext());
+            getPopularMovies();
+
+            //TODO ??
+            //getTopRatedMovies();
+        } else {
             showNoNetworkErrorMessage();
         }
 
+    }
+
+    private void getPopularMovies() {
+        movieViewModel.getPopularMovies().observe(this, new Observer<List<Movie>>() {
+            @Override
+            public void onChanged(List<Movie> movies) {
+                setTitle(R.string.popular_movies);
+                mAdapter.setMovieList(new ArrayList<>(movies));
+                mAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+
+    private void getTopRatedMovies() {
+        movieViewModel.getTopRatedMovies().observe(this, new Observer<List<Movie>>() {
+            @Override
+            public void onChanged(List<Movie> movies) {
+                setTitle(R.string.best_rated);
+                mAdapter.setMovieList(new ArrayList<>(movies));
+                mAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+
+    private void getFavoriteMovies() {
+        movieViewModel.getFavouriteMovies().observe(this, new Observer<List<Movie>>() {
+            @Override
+            public void onChanged(List<Movie> movies) {
+                setTitle(R.string.fav_movies);
+                mAdapter.setMovieList(new ArrayList<>(movies));
+                mAdapter.notifyDataSetChanged();
+            }
+        });
     }
 
     @Override
@@ -93,27 +131,13 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.menu_best_rated) {
-            if(isConnected(this)){
-                makeMovieDbSearchQuery(BEST_RATED_DESCENDING);
-            }else{
-                showNoNetworkErrorMessage();
-            }
+            getTopRatedMovies();
             return true;
         } else if (id == R.id.menu_most_popular) {
-            if(isConnected(this)){
-                makeMovieDbSearchQuery(POPULARITY_DESCENDING);
-            }else{
-                showNoNetworkErrorMessage();
-            }
+            getPopularMovies();
             return true;
-        }else if (id == R.id.menu_favorites) {
-            if(isConnected(this)){
-               // makeMovieDbSearchQuery(POPULARITY_DESCENDING);
-                loadFavoriteMoviesFromDB();
-            }else{
-                showNoNetworkErrorMessage();
-
-            }
+        } else if (id == R.id.menu_favorites) {
+            getFavoriteMovies();
             return true;
         }
 
@@ -127,25 +151,6 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         Intent intentToStartDetailActivity = new Intent(context, destinationClass);
         intentToStartDetailActivity.putExtra("movie", movie);
         startActivity(intentToStartDetailActivity);
-    }
-
-    private void loadFavoriteMoviesFromDB(){
-        mDb = MovieDatabase.getInstance(getApplicationContext());
-        // Load favorite Movies from Database
-        List<Movie> moviesList = mDb.movieDao().loadAllMovies();
-        for(int i = 0; i<moviesList.size();i++){
-            Log.d(LOG_TAG,moviesList.get(i).getTitle());
-        }
-        mAdapter = new MovieAdapter(this, this, new ArrayList<>(moviesList));
-        recyclerView.setAdapter(mAdapter);
-        scrollView.setVisibility(View.VISIBLE);
-    }
-
-    private void makeMovieDbSearchQuery(String searchQuery) {
-
-        URL movieDbUrl = NetworkUtils.buildUrl(searchQuery);
-        Log.d(LOG_TAG, "Movie DB Search URL: " + movieDbUrl);
-        new MovieDbQueryTask().execute(movieDbUrl);
     }
 
     private void showErrorMessage() {
@@ -168,6 +173,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         //recyclerView.setLayoutManager(gridLayoutManager);
         scrollView.setVisibility(View.VISIBLE);
     }
+
     private boolean isConnected(Context context) {
 
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -191,40 +197,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         return false;
     }
 
-    class MovieDbQueryTask extends AsyncTask<URL, Void, String> {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            mLoadingIndicator.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected String doInBackground(URL... urls) {
-
-            URL searchUrl = urls[0];
-            String movieDbResults = null;
-            try {
-                movieDbResults = NetworkUtils.getResponseFromHttpUrl(searchUrl);
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Error fetching movies!!", e);
-                showErrorMessage();
-            }
-            return movieDbResults;
-        }
-
-        @Override
-        protected void onPostExecute(String movieDbSearchResults) {
-            mLoadingIndicator.setVisibility(View.INVISIBLE);
-            if (movieDbSearchResults != null && !movieDbSearchResults.equals("")) {
-                try {
-                    showJsonDataView(movieDbSearchResults);
-                } catch (JSONException e) {
-                    showErrorMessage();
-                }
-            } else {
-                showErrorMessage();
-            }
-        }
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 }

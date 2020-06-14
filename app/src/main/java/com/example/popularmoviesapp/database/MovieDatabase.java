@@ -1,26 +1,38 @@
-package com.example.popularmoviesapp.utilities;
+package com.example.popularmoviesapp.database;
 
 import android.content.Context;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
 import androidx.room.Database;
-import androidx.room.DatabaseConfiguration;
-import androidx.room.InvalidationTracker;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
-import androidx.sqlite.db.SupportSQLiteOpenHelper;
 
-import com.example.popularmoviesapp.Movie;
+import com.example.popularmoviesapp.models.Movie;
+import com.example.popularmoviesapp.models.Review;
+import com.example.popularmoviesapp.models.Trailer;
 
-@Database(entities = {Movie.class}, version = 2, exportSchema = false)
+@Database(entities = {Movie.class, Review.class, Trailer.class}, version = 3, exportSchema = false)
 public abstract class MovieDatabase extends RoomDatabase {
 
+    static final Migration MIGRATION_1_2 = new Migration(1, 2) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE movie "
+                    + " ADD COLUMN mMovieID INTEGER");
+        }
+    };
+    static final Migration MIGRATION_2_3 = new Migration(2, 3) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE movie "
+                    + " ADD COLUMN mFavorite INTEGER NOT NULL DEFAULT 0");
+        }
+    };
     private static final String LOG_TAG = MovieDatabase.class.getSimpleName();
     private static final Object LOCK = new Object();
-    private static final String DATABASE_NAME = "movie";
+    private static final String DATABASE_NAME = "movies";
     private static MovieDatabase sInstance;
 
     public static MovieDatabase getInstance(Context context) {
@@ -31,9 +43,9 @@ public abstract class MovieDatabase extends RoomDatabase {
                         MovieDatabase.class, MovieDatabase.DATABASE_NAME)
                         // TODO call allowMainThreadQueries before building the instance
                         // We will allow this ONLY TEMPORALLY to see that our DB is working
-                        .allowMainThreadQueries()
+                        //.allowMainThreadQueries()
                         //.fallbackToDestructiveMigration()
-                        .addMigrations(MIGRATION_1_2)
+                        .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                         .build();
             }
         }
@@ -43,11 +55,7 @@ public abstract class MovieDatabase extends RoomDatabase {
 
     public abstract MovieDao movieDao();
 
-    static final Migration MIGRATION_1_2 = new Migration(1, 2) {
-        @Override
-        public void migrate(SupportSQLiteDatabase database) {
-            database.execSQL("ALTER TABLE movie "
-                    + " ADD COLUMN mMovieID INTEGER");
-        }
-    };
+    public abstract ReviewDao reviewDao();
+
+    public abstract TrailerDao trailerDao();
 }

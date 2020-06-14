@@ -1,10 +1,8 @@
 package com.example.popularmoviesapp.utilities;
 
-import android.util.Log;
-
-import com.example.popularmoviesapp.Movie;
-import com.example.popularmoviesapp.Review;
-import com.example.popularmoviesapp.Trailer;
+import com.example.popularmoviesapp.models.Movie;
+import com.example.popularmoviesapp.models.Review;
+import com.example.popularmoviesapp.models.Trailer;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,6 +19,7 @@ public class JsonUtils {
     private final static String JSON_RATING = "vote_average";
     private final static String JSON_POSTER_PATH = "poster_path";
     private final static String JSON_MOVIE_ID = "id";
+    private final static String JSON_POPULARITY = "popularity";
 
     private final static String JSON_REVIEW_AUTHOR = "author";
     private final static String JSON_REVIEW_CONTENT = "content";
@@ -53,8 +52,9 @@ public class JsonUtils {
         String rating;
         String poster_path;
         int movieID;
+        double popularity;
 
-        for(int i = 0; i<resultsArray.length();i++){
+        for (int i = 0; i < resultsArray.length(); i++) {
 
             JSONObject currentMovie = resultsArray.getJSONObject(i);
             title = currentMovie.getString(JSON_TITLE);
@@ -63,31 +63,32 @@ public class JsonUtils {
             rating = currentMovie.optString(JSON_RATING);
             poster_path = currentMovie.optString(JSON_POSTER_PATH);
             movieID = currentMovie.optInt(JSON_MOVIE_ID);
+            popularity = currentMovie.optDouble(JSON_POPULARITY);
 
-            movies.add(new Movie(createImageString(poster_path),formatYear(year),title,formatRating(rating),description,movieID));
+            movies.add(new Movie(createImageString(poster_path), formatYear(year), title, formatRating(rating), popularity, description, movieID));
         }
         return movies;
     }
 
-    private static String createImageString(String _poster_path){
-        if(_poster_path.equals("")){
+    private static String createImageString(String _poster_path) {
+        if (_poster_path.equals("")) {
             return _poster_path;
         }
         return POSTER_BASE_URL + POSTER_SIZE + _poster_path;
     }
 
-    private static String formatYear(String _year){
-        if(_year.equals("")){
+    private static String formatYear(String _year) {
+        if (_year.equals("")) {
             return _year;
         }
-        return _year.substring(0,4);
+        return _year.substring(0, 4);
     }
 
-    private static String formatRating(String _rating){
+    private static String formatRating(String _rating) {
         return _rating + "/10";
     }
 
-    public static ArrayList<Review> extractReviewFromJSON(String mJsonString) throws JSONException {
+    public static ArrayList<Review> extractReviewFromJSON(String mJsonString, int movieId) throws JSONException {
         ArrayList<Review> reviews = new ArrayList<>();
         JSONObject jsonString = new JSONObject(mJsonString);
         JSONArray resultsArray = jsonString.getJSONArray(JSON_RESULTS);
@@ -98,7 +99,7 @@ public class JsonUtils {
         String url;
 
 
-        for(int i = 0; i<resultsArray.length();i++){
+        for (int i = 0; i < resultsArray.length(); i++) {
 
             JSONObject currentReview = resultsArray.getJSONObject(i);
             author = currentReview.getString(JSON_REVIEW_AUTHOR);
@@ -106,12 +107,12 @@ public class JsonUtils {
             id = currentReview.optString(JSON_REVIEW_ID);
             url = currentReview.optString(JSON_REVIEW_URL);
 
-            reviews.add(new Review(author,content,id,url));
+            reviews.add(new Review(movieId, author, content, id, url));
         }
         return reviews;
     }
 
-    public static ArrayList<Trailer> extractTrailerFromJSON(String mJsonString) throws JSONException {
+    public static ArrayList<Trailer> extractTrailerFromJSON(String mJsonString, int movieId) throws JSONException {
         ArrayList<Trailer> trailer = new ArrayList<>();
         JSONObject jsonString = new JSONObject(mJsonString);
         JSONArray resultsArray = jsonString.getJSONArray(JSON_RESULTS);
@@ -125,7 +126,7 @@ public class JsonUtils {
         String size;
         String type;
 
-        for(int i = 0; i<resultsArray.length();i++){
+        for (int i = 0; i < resultsArray.length(); i++) {
 
             JSONObject currentTrailer = resultsArray.getJSONObject(i);
             id = currentTrailer.getString(JSON_TRAILER_ID);
@@ -137,7 +138,7 @@ public class JsonUtils {
             size = currentTrailer.optString(JSON_TRAILER_SIZE);
             type = currentTrailer.optString(JSON_TRAILER_TYPE);
 
-            trailer.add(new Trailer(id, iso_639_1,iso_3166_1,key,name,site,size,type));
+            trailer.add(new Trailer(movieId, id, iso_639_1, iso_3166_1, key, name, site, size, type));
         }
         return trailer;
     }

@@ -1,18 +1,36 @@
-package com.example.popularmoviesapp;
+package com.example.popularmoviesapp.models;
 
+import androidx.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
+@Entity(tableName = "review")
 public class Review {
 
+    private int mMovieId;
+
+    @PrimaryKey
+    @NonNull
+    private String mId;
     private String mAuthor;
     private String mContent;
-    private String mId;
     private String mUrl;
 
 
-    public Review(String author, String content, String id, String url){
+    public Review(int movieId, String author, String content, String id, String url) {
         mAuthor = author;
         mContent = content;
         mId = id;
         mUrl = url;
+        mMovieId = movieId;
+    }
+
+    public int getMovieId() {
+        return this.mMovieId;
+    }
+
+    public void setMovieId(int movieId) {
+        this.mMovieId = movieId;
     }
 
     public String getAuthor() {

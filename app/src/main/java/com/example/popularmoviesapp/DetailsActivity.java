@@ -3,10 +3,8 @@ package com.example.popularmoviesapp;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -14,27 +12,30 @@ import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.popularmoviesapp.utilities.JsonUtils;
-import com.example.popularmoviesapp.utilities.MovieDatabase;
-import com.example.popularmoviesapp.utilities.NetworkUtils;
+import com.example.popularmoviesapp.database.MovieDatabase;
+import com.example.popularmoviesapp.models.Movie;
+import com.example.popularmoviesapp.models.MovieViewModel;
+import com.example.popularmoviesapp.models.Review;
+import com.example.popularmoviesapp.models.ReviewViewModel;
+import com.example.popularmoviesapp.models.Trailer;
+import com.example.popularmoviesapp.models.TrailerViewModel;
+import com.example.popularmoviesapp.utilities.AppExecutors;
+import com.example.popularmoviesapp.utilities.FetchReviewsFromNetwork;
+import com.example.popularmoviesapp.utilities.FetchTrailerFromNetwork;
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONException;
-
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class DetailsActivity extends AppCompatActivity implements TrailerAdapter.TrailerAdapterOnClickHandler{
+public class DetailsActivity extends AppCompatActivity implements TrailerAdapter.TrailerAdapterOnClickHandler {
 
-    private MovieDatabase mDb;
     private static final String LOG_TAG = DetailsActivity.class.getSimpleName();
-
+    private MovieDatabase mDb;
     private RecyclerView recyclerViewReview;
     private ReviewAdapter mReviewAdapter;
     private RecyclerView recyclerViewTrailer;
@@ -46,19 +47,25 @@ public class DetailsActivity extends AppCompatActivity implements TrailerAdapter
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
+        MovieViewModel movieViewModel = ViewModelProvider.AndroidViewModelFactory.getInstance(
+                getApplication()).create(MovieViewModel.class);
 
         final TextView mTitle = findViewById(R.id.tv_movie_title);
-        TextView mYear = findViewById(R.id.tv_movie_year);
-        TextView mDescription = findViewById(R.id.tv_movie_description);
-        TextView mRating = findViewById(R.id.tv_movie_rating);
-        ImageView mPoster = findViewById(R.id.iv_movie_poster);
+        final TextView mYear = findViewById(R.id.tv_movie_year);
+        final TextView mDescription = findViewById(R.id.tv_movie_description);
+        final TextView mRating = findViewById(R.id.tv_movie_rating);
+        final ImageView mPoster = findViewById(R.id.iv_movie_poster);
         final Button mFavorite = findViewById(R.id.bt_favorite);
 
         recyclerViewReview = findViewById(R.id.recycler_reviews);
         recyclerViewReview.setLayoutManager(new LinearLayoutManager(this));
+        mReviewAdapter = new ReviewAdapter();
+        recyclerViewReview.setAdapter(mReviewAdapter);
 
         recyclerViewTrailer = findViewById(R.id.recycler_trailer);
         recyclerViewTrailer.setLayoutManager(new LinearLayoutManager(this));
+        mTrailerAdapter = new TrailerAdapter(this);
+        recyclerViewTrailer.setAdapter(mTrailerAdapter);
 
         mDb = MovieDatabase.getInstance(getApplicationContext());
 
@@ -66,103 +73,74 @@ public class DetailsActivity extends AppCompatActivity implements TrailerAdapter
         if (intentThatStartedThisActivity != null) {
             if (intentThatStartedThisActivity.hasExtra("movie")) {
                 final Movie mMovie = Objects.requireNonNull(intentThatStartedThisActivity.getExtras()).getParcelable("movie");
-                mTitle.setText(Objects.requireNonNull(mMovie).getTitle());
-                mYear.setText(mMovie.getYear());
-                mDescription.setText(mMovie.getDescription());
-                mRating.setText(mMovie.getRating());
-                //mPoster.setImageResource(mMovie.getImage());
 
-                Picasso.get()
-                        .load(mMovie.getImage())
-                        .placeholder(R.drawable.placeholder)
-                        .error(R.drawable.image_not_found)
-                        .into(mPoster);
+                FetchReviewsFromNetwork.getReviews(getApplicationContext(), mMovie.getMovieID());
+                getReviews(mMovie.getMovieID());
+                FetchTrailerFromNetwork.getTrailers(getApplicationContext(), mMovie.getMovieID());
+                getTrailers(mMovie.getMovieID());
 
-                //Trailer
-                URL trailerUrl = NetworkUtils.buildTrailerUrl(String.valueOf(mMovie.getMovieID()));
-                Log.d(LOG_TAG, "Trailer URL: " + trailerUrl);
-                new MovieDbQueryTask().execute(trailerUrl);
+                movieViewModel.getMovie(mMovie.getMovieID()).observe(this, new Observer<Movie>() {
+                    @Override
+                    public void onChanged(Movie movie) {
+                        setTitle("Movie Details");
+                        mTitle.setText(Objects.requireNonNull(movie).getTitle());
+                        mYear.setText(movie.getYear());
+                        mDescription.setText(movie.getDescription());
+                        mRating.setText(movie.getRating());
+                        Picasso.get()
+                                .load(movie.getImage())
+                                .placeholder(R.drawable.placeholder)
+                                .error(R.drawable.image_not_found)
+                                .into(mPoster);
 
-                //Reviews
-                URL reviewsURL = NetworkUtils.buildReviewUrl(String.valueOf(mMovie.getMovieID()));
-                Log.d(LOG_TAG, "Reviews URL: " + reviewsURL);
-                new MovieDbQueryTask().execute(reviewsURL);
-
-                // Load favorite Movies from Database
-                List<Movie> moviesList = mDb.movieDao().loadAllMovies();
-                if (moviesList.size() > 0) {
-                    for (int i = 0; i < moviesList.size(); i++) {
-                        if (moviesList.get(i).getMovieID() == mMovie.getMovieID()) {
-                            mFavorite.setText("Delete from Favorites");
-                        }
+                        mFavorite.setText(movie.isFavorite() ? "  Remove Favorite" : "  Add Favorite");
+                        //mFavorite.setBackground(mMovie.isFavorite() ? R.drawable.favorite_empty : R.drawable.favorite_filled);
                     }
-                }
+                });
 
-//                {mFavorite.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View view) {
-//                        AsyncTask.execute(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                try {
-//                                    if(mFavorite.getText().toString().equals("Mark as Favorite")){
-//                                        Log.d(LOG_TAG, "Added " + Objects.requireNonNull(mMovie).getTitle() + " to favorites");
-//                                        // store movie in DB
-//                                        Movie movie = new Movie(mMovie.getImage(), mMovie.getYear(), mMovie.getTitle(), mMovie.getRating(), mMovie.getDescription(), mMovie.getMovieID());
-//                                        mDb.movieDao().insertMovie(movie);
-//                                        runOnUiThread(new Runnable() {
-//                                            public void run() {
-//                                                Toast.makeText(getApplicationContext(),"Added " + Objects.requireNonNull(mMovie).getTitle() + " to favorites", Toast.LENGTH_SHORT).show();
-//                                                mFavorite.setText("Delete from Favorites");
-//                                            }
-//                                        });
-//                                    }else{
-//                                        Log.d(LOG_TAG, "Deleted " + Objects.requireNonNull(mMovie).getTitle() + " from favorites");
-//                                        // store movie in DB
-//                                        mDb.movieDao().deleteMovie(mMovie);
-//                                        runOnUiThread(new Runnable() {
-//                                            public void run() {
-//                                                Toast.makeText(getApplicationContext(),"Deleted " + Objects.requireNonNull(mMovie).getTitle() + " from favorites", Toast.LENGTH_SHORT).show();
-//                                                mFavorite.setText("Mark as Favorite");
-//                                            }
-//                                        });
-//                                    }
-//                                }
-//                                catch (SQLiteConstraintException ex){
-//                                    runOnUiThread(new Runnable() {
-//                                        public void run() {
-//                                            Toast.makeText(getApplicationContext(),"Item already added",Toast.LENGTH_LONG).show();
-//                                        }
-//                                    });
-//                                }
-//                            }
-//                        });
-//                    }
-//                });}
-
-
-//                mFavorite.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        if(mFavorite.getText().toString().equals("Mark as Favorite")){
-//                            Log.d(LOG_TAG, "Added " + Objects.requireNonNull(mMovie).getTitle() + " to favorites");
-//                            // store movie in DB
-//                            Movie movie = new Movie(mMovie.getImage(), mMovie.getYear(), mMovie.getTitle(), mMovie.getRating(), mMovie.getDescription(), mMovie.getMovieID());
-//                            mDb.movieDao().insertMovie(movie);
-//                            Toast.makeText(getApplicationContext(),"Added " + Objects.requireNonNull(mMovie).getTitle() + " to favorites", Toast.LENGTH_SHORT).show();
-//                            mFavorite.setText("Delete from Favorites");
-//                        }else{
-//                            Log.d(LOG_TAG, "Deleted " + Objects.requireNonNull(mMovie).getTitle() + " from favorites");
-//                            // store movie in DB
-//                            mDb.movieDao().deleteMovie(mMovie);
-//                            Toast.makeText(getApplicationContext(),"Deleted " + Objects.requireNonNull(mMovie).getTitle() + " from favorites", Toast.LENGTH_SHORT).show();
-//                            mFavorite.setText("Mark as Favorite");
-//                        }
-//
-//                    }
-//                });
+                mFavorite.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                final Movie movie = mDb.movieDao().getMovieById(mMovie.getMovieID());
+                                movie.setFavorite(!mMovie.isFavorite());
+                                mDb.movieDao().updateMovie(movie);
+                            }
+                        });
+                    }
+                });
             }
         }
+    }
+
+    private void getReviews(int id) {
+        ReviewViewModel reviewViewModel = ViewModelProvider.AndroidViewModelFactory.getInstance(
+                getApplication()).create(ReviewViewModel.class);
+        reviewViewModel.getReviews(id).observe(this, new Observer<List<Review>>() {
+            @Override
+            public void onChanged(List<Review> reviews) {
+                if (reviews != null) {
+                    mReviewAdapter.setReviewList(reviews);
+                    mReviewAdapter.notifyDataSetChanged();
+                }
+            }
+        });
+    }
+
+    private void getTrailers(int id) {
+        TrailerViewModel trailerViewModel = ViewModelProvider.AndroidViewModelFactory.getInstance(
+                getApplication()).create(TrailerViewModel.class);
+        trailerViewModel.getTrailers(id).observe(this, new Observer<List<Trailer>>() {
+            @Override
+            public void onChanged(List<Trailer> trailers) {
+                if (trailers != null) {
+                    mTrailerAdapter.setTrailerList(trailers);
+                    mTrailerAdapter.notifyDataSetChanged();
+                }
+            }
+        });
     }
 
     @Override
@@ -178,69 +156,4 @@ public class DetailsActivity extends AppCompatActivity implements TrailerAdapter
         }
     }
 
-    private void showTrailerDataView(String searchResult) throws JSONException {
-        //mErrorMessageDisplay.setVisibility(View.INVISIBLE);
-        mTrailerAdapter = new TrailerAdapter(this, JsonUtils.extractTrailerFromJSON(searchResult), getApplicationContext());
-        recyclerViewTrailer.setAdapter(mTrailerAdapter);
-        //scrollView.setVisibility(View.VISIBLE);
-    }
-
-    private void showReviewDataView(String searchResult) throws JSONException {
-        //mErrorMessageDisplay.setVisibility(View.INVISIBLE);
-        mReviewAdapter = new ReviewAdapter(JsonUtils.extractReviewFromJSON(searchResult), getApplicationContext());
-        recyclerViewReview.setAdapter(mReviewAdapter);
-        //scrollView.setVisibility(View.VISIBLE);
-    }
-
-
-    class MovieDbQueryTask extends AsyncTask<URL, Void, String> {
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            //mLoadingIndicator.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected String doInBackground(URL... urls) {
-
-            URL searchUrl = urls[0];
-            String movieDbResults = null;
-            try {
-                movieDbResults = NetworkUtils.getResponseFromHttpUrl(searchUrl);
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Error fetching movies!!", e);
-                //showErrorMessage();
-            }
-            return movieDbResults;
-        }
-
-        @Override
-        protected void onPostExecute(String movieDbSearchResults) {
-            //mLoadingIndicator.setVisibility(View.INVISIBLE);
-            Log.d(LOG_TAG, movieDbSearchResults);
-            if (movieDbSearchResults != null && !movieDbSearchResults.equals("")) {
-
-                if (movieDbSearchResults.contains("iso_")) {
-                    Log.d(LOG_TAG, "Getting Trailer information");
-                    try {
-                        showTrailerDataView(movieDbSearchResults);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    Log.d(LOG_TAG, "Getting Review information");
-                    try {
-                        showReviewDataView(movieDbSearchResults);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-            } else {
-                //showErrorMessage();
-                Log.e(LOG_TAG, "Error getting results");
-            }
-        }
-    }
 }
