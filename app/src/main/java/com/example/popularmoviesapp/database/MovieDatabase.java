@@ -41,8 +41,6 @@ public abstract class MovieDatabase extends RoomDatabase {
                 Log.d(LOG_TAG, "Creating new database instance");
                 sInstance = Room.databaseBuilder(context.getApplicationContext(),
                         MovieDatabase.class, MovieDatabase.DATABASE_NAME)
-                        // TODO call allowMainThreadQueries before building the instance
-                        // We will allow this ONLY TEMPORALLY to see that our DB is working
                         //.allowMainThreadQueries()
                         //.fallbackToDestructiveMigration()
                         .addMigrations(MIGRATION_1_2, MIGRATION_2_3)

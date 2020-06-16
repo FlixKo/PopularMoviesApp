@@ -78,9 +78,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
             FetchMoviesFromNetwork.getPopularMovies(getApplicationContext());
             FetchMoviesFromNetwork.getTopRatedMovies(getApplicationContext());
             getPopularMovies();
-
-            //TODO ??
-            //getTopRatedMovies();
+            getTopRatedMovies();
         } else {
             showNoNetworkErrorMessage();
         }

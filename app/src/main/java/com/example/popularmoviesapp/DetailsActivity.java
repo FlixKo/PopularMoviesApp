@@ -17,7 +17,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.popularmoviesapp.database.MovieDatabase;
 import com.example.popularmoviesapp.models.Movie;
 import com.example.popularmoviesapp.models.MovieViewModel;
 import com.example.popularmoviesapp.models.Review;
@@ -27,6 +26,7 @@ import com.example.popularmoviesapp.models.TrailerViewModel;
 import com.example.popularmoviesapp.utilities.AppExecutors;
 import com.example.popularmoviesapp.utilities.FetchReviewsFromNetwork;
 import com.example.popularmoviesapp.utilities.FetchTrailerFromNetwork;
+import com.example.popularmoviesapp.database.MovieDatabase;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
@@ -34,14 +34,12 @@ import java.util.Objects;
 
 public class DetailsActivity extends AppCompatActivity implements TrailerAdapter.TrailerAdapterOnClickHandler {
 
-    private static final String LOG_TAG = DetailsActivity.class.getSimpleName();
     private MovieDatabase mDb;
-    private RecyclerView recyclerViewReview;
-    private ReviewAdapter mReviewAdapter;
-    private RecyclerView recyclerViewTrailer;
-    private TrailerAdapter mTrailerAdapter;
 
-    // TODO!
+    private ReviewAdapter mReviewAdapter;
+    private TrailerAdapter mTrailerAdapter;
+    private Movie mMovie;
+
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,12 +55,12 @@ public class DetailsActivity extends AppCompatActivity implements TrailerAdapter
         final ImageView mPoster = findViewById(R.id.iv_movie_poster);
         final Button mFavorite = findViewById(R.id.bt_favorite);
 
-        recyclerViewReview = findViewById(R.id.recycler_reviews);
+        RecyclerView recyclerViewReview = findViewById(R.id.recycler_reviews);
         recyclerViewReview.setLayoutManager(new LinearLayoutManager(this));
         mReviewAdapter = new ReviewAdapter();
         recyclerViewReview.setAdapter(mReviewAdapter);
 
-        recyclerViewTrailer = findViewById(R.id.recycler_trailer);
+        RecyclerView recyclerViewTrailer = findViewById(R.id.recycler_trailer);
         recyclerViewTrailer.setLayoutManager(new LinearLayoutManager(this));
         mTrailerAdapter = new TrailerAdapter(this);
         recyclerViewTrailer.setAdapter(mTrailerAdapter);
@@ -72,17 +70,19 @@ public class DetailsActivity extends AppCompatActivity implements TrailerAdapter
         Intent intentThatStartedThisActivity = getIntent();
         if (intentThatStartedThisActivity != null) {
             if (intentThatStartedThisActivity.hasExtra("movie")) {
-                final Movie mMovie = Objects.requireNonNull(intentThatStartedThisActivity.getExtras()).getParcelable("movie");
+                mMovie = Objects.requireNonNull(intentThatStartedThisActivity.getExtras()).getParcelable("movie");
 
                 FetchReviewsFromNetwork.getReviews(getApplicationContext(), mMovie.getMovieID());
                 getReviews(mMovie.getMovieID());
                 FetchTrailerFromNetwork.getTrailers(getApplicationContext(), mMovie.getMovieID());
                 getTrailers(mMovie.getMovieID());
+            }
+        }
 
                 movieViewModel.getMovie(mMovie.getMovieID()).observe(this, new Observer<Movie>() {
                     @Override
                     public void onChanged(Movie movie) {
-                        setTitle("Movie Details");
+                        setTitle(R.string.movie_details);
                         mTitle.setText(Objects.requireNonNull(movie).getTitle());
                         mYear.setText(movie.getYear());
                         mDescription.setText(movie.getDescription());
@@ -93,7 +93,11 @@ public class DetailsActivity extends AppCompatActivity implements TrailerAdapter
                                 .error(R.drawable.image_not_found)
                                 .into(mPoster);
 
-                        mFavorite.setText(movie.isFavorite() ? "  Remove Favorite" : "  Add Favorite");
+                        if(movie.isFavorite()){
+                            mFavorite.setText(R.string.remove_fav);
+                        }else {
+                            mFavorite.setText(R.string.add_fav);
+                        }
                         //mFavorite.setBackground(mMovie.isFavorite() ? R.drawable.favorite_empty : R.drawable.favorite_filled);
                     }
                 });
@@ -111,8 +115,7 @@ public class DetailsActivity extends AppCompatActivity implements TrailerAdapter
                         });
                     }
                 });
-            }
-        }
+
     }
 
     private void getReviews(int id) {

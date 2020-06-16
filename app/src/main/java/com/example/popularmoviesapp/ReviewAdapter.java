@@ -1,5 +1,6 @@
 package com.example.popularmoviesapp;
 
+import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,14 +10,16 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.popularmoviesapp.models.Movie;
 import com.example.popularmoviesapp.models.Review;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewHolder> {
+public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewHolder>{
 
-    private final String LOG_TAG = ReviewAdapter.class.getName();
     private List<Review> mReviews;
+    private final String LOG_TAG = ReviewAdapter.class.getName();
 
     void setReviewList(List<Review> reviews) {
         mReviews = reviews;
@@ -26,7 +29,7 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewHold
     @Override
     public ReviewAdapter.ReviewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater myInflater = LayoutInflater.from(parent.getContext());
-        View myView = myInflater.inflate(R.layout.reviews, parent, false);
+        View myView = myInflater.inflate(R.layout.reviews, parent,false);
         return new ReviewHolder(myView);
     }
 
@@ -44,7 +47,6 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewHold
     public class ReviewHolder extends RecyclerView.ViewHolder {
 
         final TextView myTextView;
-
         public ReviewHolder(@NonNull View itemView) {
             super(itemView);
             myTextView = itemView.findViewById(R.id.review_element);

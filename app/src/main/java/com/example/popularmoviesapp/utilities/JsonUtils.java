@@ -39,8 +39,6 @@ public class JsonUtils {
     private final static String POSTER_BASE_URL = "https://image.tmdb.org/t/p/";
     private final static String POSTER_SIZE = "w342";
 
-    private final static String LOG_TAG = JsonUtils.class.getName();
-
     public static ArrayList<Movie> extractMovieFromJSON(String mJsonString) throws JSONException {
         ArrayList<Movie> movies = new ArrayList<>();
         JSONObject jsonString = new JSONObject(mJsonString);

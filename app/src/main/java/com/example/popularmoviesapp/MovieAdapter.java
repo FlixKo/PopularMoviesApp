@@ -1,10 +1,10 @@
 package com.example.popularmoviesapp;
 
-import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.content.Context;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
@@ -14,13 +14,15 @@ import com.example.popularmoviesapp.models.Movie;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieHolder> {
 
+    private ArrayList<Movie> mMovies;
     private final MovieAdapterOnClickHandler mClickHandler;
     private final String LOG_TAG = MovieAdapter.class.getName();
+
     private final Context ctx;
-    private ArrayList<Movie> mMovies;
 
     public MovieAdapter(MovieAdapterOnClickHandler mClickHandler, Context context, ArrayList<Movie> movies) {
         this.mClickHandler = mClickHandler;
@@ -31,6 +33,11 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieHolder>
     void setMovieList(ArrayList<Movie> movies) {
         mMovies = movies;
     }
+
+    public interface MovieAdapterOnClickHandler {
+        void onClick(Movie movie);
+    }
+
 
     @NonNull
     @Override
@@ -60,10 +67,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieHolder>
     public void setMovies(ArrayList<Movie> movies) {
         mMovies = movies;
         notifyDataSetChanged();
-    }
-
-    public interface MovieAdapterOnClickHandler {
-        void onClick(Movie movie);
     }
 
     public class MovieHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

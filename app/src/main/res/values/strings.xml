@@ -5,10 +5,12 @@
     <string name="fav_movies">Favorite Movies</string>
     <string name="best_rated">Best Rated Movies</string>
     <string name="popular_movies">Most Popular Movies</string>
+    <string name="movie_details">Movie Details</string>
     <string name="year">Year</string>
     <string name="duration">Duration</string>
     <string name="rating">Rating</string>
     <string name="add_fav">  Add Favorite</string>
+    <string name="remove_fav">  Remove Favorite</string>
     <string name="trailer_title">Trailers:</string>
     <string name="review_title">Reviews:</string>
 </resources>
